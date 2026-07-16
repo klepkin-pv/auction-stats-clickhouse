@@ -1,5 +1,7 @@
 # Auction Stats ClickHouse
 
+![CI](https://github.com/klepkin-pv/auction-stats-clickhouse/actions/workflows/ci.yml/badge.svg)
+
 Pet project for practicing ClickHouse and FastAPI.
 
 A small service that receives auction bids, stores raw events in ClickHouse, and serves aggregated statistics through a REST API.
@@ -34,8 +36,11 @@ API will be available at http://localhost:8000/docs.
 ## Tests
 
 ```bash
+pip install -r requirements.txt -r requirements-dev.txt
 pytest
 ```
+
+CI runs `ruff` and `pytest` in GitHub Actions for every push and pull request.
 
 ## Project structure
 
