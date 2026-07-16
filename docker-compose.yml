@@ -6,6 +6,8 @@ services:
       - "9000:9000"
     environment:
       CLICKHOUSE_DB: auction
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: clickpass
     volumes:
       - clickhouse_data:/var/lib/clickhouse
 
@@ -15,6 +17,8 @@ services:
       - "8000:8000"
     environment:
       CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: clickpass
     depends_on:
       - clickhouse
     command: >

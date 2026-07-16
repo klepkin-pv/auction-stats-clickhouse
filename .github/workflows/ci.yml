@@ -16,8 +16,10 @@ jobs:
           - 9000:9000
         env:
           CLICKHOUSE_DB: default
+          CLICKHOUSE_USER: default
+          CLICKHOUSE_PASSWORD: testpass
         options: >-
-          --health-cmd "clickhouse-client --query 'SELECT 1'"
+          --health-cmd "clickhouse-client --password testpass --query 'SELECT 1'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -43,4 +45,6 @@ jobs:
         env:
           CLICKHOUSE_HOST: localhost
           CLICKHOUSE_DATABASE: default
+          CLICKHOUSE_USER: default
+          CLICKHOUSE_PASSWORD: testpass
         run: pytest -q
