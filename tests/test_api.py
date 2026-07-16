@@ -1,11 +1,4 @@
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-client = TestClient(app)
-
-
-def test_create_bid():
+def test_create_bid(client):
     response = client.post(
         "/bids",
         json={
@@ -21,6 +14,6 @@ def test_create_bid():
     assert data["amount"] == "100.50"
 
 
-def test_stats_not_found():
+def test_stats_not_found(client):
     response = client.get("/stats/non-existent-lot")
     assert response.status_code == 404
