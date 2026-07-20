@@ -17,3 +17,11 @@ def test_create_bid(client):
 def test_stats_not_found(client):
     response = client.get("/stats/non-existent-lot")
     assert response.status_code == 404
+
+
+def test_health_check(client):
+    response = client.get("/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert data["database"] == "connected"

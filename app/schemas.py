@@ -25,3 +25,8 @@ class StatsOut(BaseModel):
     avg_amount: Decimal
     max_amount: Decimal
     unique_bidders: int
+
+
+class HealthOut(BaseModel):
+    status: str
+    database: str

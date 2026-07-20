@@ -16,14 +16,19 @@ A small service that receives auction bids, stores raw events in ClickHouse, and
 - pytest
 - Docker Compose
 
+## API
+
+- `GET /health` — healthcheck, checks ClickHouse connectivity.
+- `POST /bids` — accept a new bid.
+- `GET /stats/{lot_id}` — return aggregated stats for a lot: total bids, average bid, max bid, unique bidders.
+
 ## Architecture
 
-- `POST /bids` — accept a new bid.
-- `GET /stats` — return aggregated stats: total bids, average bid, max bid, unique bidders per lot.
-- Background ETL task materializes raw events into an aggregated view.
+- Raw bid events are written to ClickHouse via `POST /bids`.
+- Aggregated stats are computed on demand into `bids_stats` when `GET /stats/{lot_id}` is first requested.
 - ClickHouse tables:
   - `bids_raw` — incoming events.
-  - `bids_stats` — pre-aggregated metrics, refreshed periodically.
+  - `bids_stats` — pre-aggregated metrics per lot.
 
 ## Run locally
 
@@ -32,6 +37,12 @@ docker compose up --build
 ```
 
 API will be available at http://localhost:8000/docs.
+
+Check health:
+
+```bash
+curl http://localhost:8000/health
+```
 
 ## Tests
 

@@ -1,13 +1,24 @@
 from decimal import Decimal
 from uuid import uuid4
 
+from clickhouse_driver.errors import NetworkError
 from fastapi import APIRouter, HTTPException
 
 from app.db.clickhouse import get_client
 from app.etl.aggregator import aggregate_lot_stats
-from app.schemas import BidIn, BidOut, StatsOut
+from app.schemas import BidIn, BidOut, HealthOut, StatsOut
 
 router = APIRouter()
+
+
+@router.get("/health", response_model=HealthOut)
+def health_check() -> HealthOut:
+    try:
+        client = get_client()
+        client.execute("SELECT 1")
+        return HealthOut(status="ok", database="connected")
+    except NetworkError:
+        return HealthOut(status="degraded", database="unreachable")
 
 
 @router.post("/bids", response_model=BidOut)
