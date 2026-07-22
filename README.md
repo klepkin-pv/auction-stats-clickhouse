@@ -44,6 +44,22 @@ Check health:
 curl http://localhost:8000/health
 ```
 
+### API examples
+
+Post a bid:
+
+```bash
+curl -X POST http://localhost:8000/bids \
+  -H "Content-Type: application/json" \
+  -d '{"lot_id": "lot-1", "bidder_id": "user-1", "amount": 100.50}'
+```
+
+Get aggregated stats for a lot:
+
+```bash
+curl http://localhost:8000/stats/lot-1
+```
+
 ## Tests
 
 ```bash
