@@ -1,35 +1,31 @@
 # auction-stats-clickhouse
 
-Сервис статистики рекламных аукционов на FastAPI + ClickHouse.
-
-Хранит ставки (bids), показы (impressions) и клики (clicks), считает CTR, CPM, сумму выигранных ставок и другие метрики.
+Сервис статистики рекламных аукционов: сохраняет ставки, показы и клики в ClickHouse, отдаёт CTR, CPM и выручку через FastAPI.
 
 ## Стек
 
-- Python 3.12, FastAPI, Pydantic v2
-- ClickHouse для аналитики
-- Redis для кэширования агрегаций
-- Docker Compose для локального запуска
-- pytest для тестов
+- Python 3.12 + FastAPI + Pydantic v2
+- ClickHouse
+- Redis
+- Docker Compose
+- pytest
 
-## Быстрый старт
+## Запуск
 
 ```bash
-# 1. Запуск
+cp .env.example .env
 make up
-
-# 2. Загрузка тестовых данных
-python scripts/load_sample_data.py
-
-# 3. Проверка API
 curl http://localhost:8000/health
 ```
 
 ## API
 
-- `POST /bids` — загрузка batch ставок
-- `GET /stats/ctr` — CTR по кампаниям
-- `GET /stats/revenue` — выручка (сумма победивших ставок)
+- `POST /api/v1/bids` — загрузка batch ставок
+- `POST /api/v1/impressions` — загрузка показов
+- `POST /api/v1/clicks` — загрузка кликов
+- `GET /api/v1/stats/ctr` — CTR по кампаниям
+- `GET /api/v1/stats/revenue` — сумма ставок
+- `GET /api/v1/stats/cpm` — CPM
 
 ## Тесты
 
