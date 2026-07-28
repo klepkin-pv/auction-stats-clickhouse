@@ -1,7 +1,6 @@
-from decimal import Decimal
-
 from fastapi import APIRouter
 
+from src.cache import cache_key, get_stats, invalidate_stats, set_stats
 from src.clickhouse.client import get_client
 from src.models.bid import Bid, Click, Impression
 
@@ -14,6 +13,10 @@ def _build_filter(campaign_id: str | None) -> tuple[str, dict]:
     return "", {}
 
 
+def _rows_to_stats(rows, fields):
+    return [dict(zip(fields, row, strict=False)) for row in rows]
+
+
 @router.post("/bids")
 def create_bids(bids: list[Bid]):
     client = get_client()
@@ -22,6 +25,7 @@ def create_bids(bids: list[Bid]):
         for b in bids
     ]
     client.insert("bids", rows)
+    invalidate_stats()
     return {"inserted": len(rows)}
 
 
@@ -30,6 +34,7 @@ def create_impressions(items: list[Impression]):
     client = get_client()
     rows = [(str(i.id), i.campaign_id, i.created_at) for i in items]
     client.insert("impressions", rows)
+    invalidate_stats()
     return {"inserted": len(rows)}
 
 
@@ -38,11 +43,17 @@ def create_clicks(items: list[Click]):
     client = get_client()
     rows = [(str(c.id), c.campaign_id, c.created_at) for c in items]
     client.insert("clicks", rows)
+    invalidate_stats()
     return {"inserted": len(rows)}
 
 
 @router.get("/stats/ctr")
 def get_ctr(campaign_id: str | None = None):
+    key = cache_key("stats:ctr", {"campaign_id": campaign_id or "all"})
+    cached = get_stats(key)
+    if cached is not None:
+        return cached
+
     client = get_client()
     where, params = _build_filter(campaign_id)
     result = client.query(
@@ -60,19 +71,21 @@ def get_ctr(campaign_id: str | None = None):
         """,
         parameters=params,
     )
-    return [
-        {
-            "campaign_id": row[0],
-            "impressions": row[1],
-            "clicks": row[2],
-            "ctr": row[3],
-        }
-        for row in result.result_rows
-    ]
+    stats = _rows_to_stats(
+        result.result_rows,
+        ["campaign_id", "impressions", "clicks", "ctr"],
+    )
+    set_stats(key, stats)
+    return stats
 
 
 @router.get("/stats/revenue")
 def get_revenue(campaign_id: str | None = None):
+    key = cache_key("stats:revenue", {"campaign_id": campaign_id or "all"})
+    cached = get_stats(key)
+    if cached is not None:
+        return cached
+
     client = get_client()
     where, params = _build_filter(campaign_id)
     result = client.query(
@@ -85,14 +98,21 @@ def get_revenue(campaign_id: str | None = None):
         """,
         parameters=params,
     )
-    return [
-        {"campaign_id": row[0], "revenue": Decimal(str(row[1]))}
+    stats = [
+        {"campaign_id": row[0], "revenue": float(row[1])}
         for row in result.result_rows
     ]
+    set_stats(key, stats)
+    return stats
 
 
 @router.get("/stats/cpm")
 def get_cpm(campaign_id: str | None = None):
+    key = cache_key("stats:cpm", {"campaign_id": campaign_id or "all"})
+    cached = get_stats(key)
+    if cached is not None:
+        return cached
+
     client = get_client()
     where, params = _build_filter(campaign_id)
     result = client.query(
@@ -107,7 +127,9 @@ def get_cpm(campaign_id: str | None = None):
         """,
         parameters=params,
     )
-    return [
-        {"campaign_id": row[0], "cpm": Decimal(str(row[1]))}
+    stats = [
+        {"campaign_id": row[0], "cpm": float(row[1])}
         for row in result.result_rows
     ]
+    set_stats(key, stats)
+    return stats

@@ -1,17 +1,23 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from src.api import router
+from src.cache import invalidate_stats
 from src.clickhouse.client import get_client
 from src.clickhouse.migrations import run_migrations
 
-app = FastAPI(title="Auction Stats ClickHouse")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    run_migrations()
+    invalidate_stats()
+    yield
+
+
+app = FastAPI(title="Auction Stats ClickHouse", lifespan=lifespan)
 
 app.include_router(router.router, prefix="/api/v1")
-
-
-@app.on_event("startup")
-def startup():
-    run_migrations()
 
 
 @app.get("/health")
