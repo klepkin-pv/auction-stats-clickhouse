@@ -1,4 +1,4 @@
-.PHONY: up down test lint fmt
+.PHONY: up down test lint fmt seed
 
 up:
 	docker compose up --build -d
@@ -10,7 +10,10 @@ test:
 	pytest
 
 lint:
-	ruff check src tests
+	ruff check src tests scripts
 
 fmt:
-	ruff format src tests
+	ruff format src tests scripts
+
+seed:
+	python scripts/generate_events.py
