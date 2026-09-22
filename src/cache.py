@@ -17,7 +17,8 @@ def _make_redis_client():
         )
         client.ping()
         return client
-    except redis.ConnectionError:
+    except redis.RedisError:
+        # сервер может быть недоступен или не поддержать рукопожатие клиента
         return None
 
 
